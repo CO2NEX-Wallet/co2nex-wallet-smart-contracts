@@ -45,8 +45,8 @@ If you love what we're building — open-source blockchain solutions for environ
 - **USDC / USDT ERC20:** `0x9d1Df1C2CABB2338301b6eA25b10760f3F437fF5`
 - **Polygon (MATIC):** `0x3a27102ac1AF27cD3eE29688a413dc7d1333A00D`
 - **Polygon - USDC / USDT:** `0x3a27102ac1AF27cD3eE29688a413dc7d1333A00D`
-- **Bitcoin (BTC):** `bc1qYourBTCAddressHere`
-- 🌍 **Or any other tokens — just ask!**
+- **Bitcoin (BTC):** `bc1qh7ry3889lc9y9x8hn5uy25c6705eym3ks02jet`
+- **BNB:** `0xEa6E44e3C7a16E08Ffc5b89f61933C7E39132c5B`
 
 ### ❤️ GitHub Sponsor  
 Become a sponsor and help fund CO2NEX development:  
