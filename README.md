@@ -19,6 +19,55 @@
 
 ---
 
+## 💬 Community Support & Discussions
+
+[![GitHub Discussions](https://img.shields.io/github/discussions/CO2NEX/co2nex-wallet-smart-contracts?label=Join%20the%20Discussion&logo=github)](https://github.com/CO2NEX/co2nex-wallet-smart-contracts/discussions)
+[![Ask Questions](https://img.shields.io/badge/Ask%20a%20Question-Help%20&%20Support-blue?logo=github)](https://github.com/CO2NEX/co2nex-wallet-smart-contracts/discussions/categories/q-a)
+[![Feature Requests](https://img.shields.io/badge/Request%20Features-Ideas%20&%20Feedback-green?logo=github)](https://github.com/CO2NEX/co2nex-wallet-smart-contracts/discussions/categories/ideas)
+[![Announcements](https://img.shields.io/badge/📢-Announcements-orange?logo=github)](https://github.com/CO2NEX/co2nex-wallet-smart-contracts/discussions/categories/announcements)
+
+### 📢 **Join the CO2NEX Smart Contract Discussions!**
+- 🚀 Collaborate on improvements
+- 🤝 Get support and ask questions
+- 💡 Share ideas and feedback
+- 🔔 Stay updated with announcements and releases
+
+Engage with developers, contributors, and the climate tech blockchain community to build the future of **transparent, tokenized climate action**.
+
+---
+
+## 💸 Support CO2NEX
+
+If you love what we're building — open-source blockchain solutions for environmental impact — you can support the project:
+
+### 🪙 **Crypto Donations**
+- **ETH / Polygon (MATIC):** `0xYourWalletAddressHere`
+- **USDC / USDT:** `0xYourWalletAddressHere`
+- **Bitcoin (BTC):** `bc1qYourBTCAddressHere`
+- 🌍 **Or any other tokens — just ask!**
+
+### ❤️ GitHub Sponsor  
+Become a sponsor and help fund CO2NEX development:  
+👉 [**GitHub Sponsors**](https://github.com/sponsors/YourGitHubUsername)
+
+---
+
+### 🌍 Tags for SEO / SERP
+
+`#CO2NEX #BlockchainClimateAction #SmartContracts #Polygon #Ethereum #HIBCToken #ESG #CarbonCredits #Web3 #ClimateTech #SustainabilityBlockchain #TokenizedClimate #TrustlessEscrow #Solidity #ERC1155 #GreenTech #OpenSourceBlockchain #CarbonMarkets`
+
+---
+
+## 🔗 Quick Links
+- 💼 **Smart Contracts:** [View the Repo](https://github.com/CO2NEX/co2nex-wallet-smart-contracts)
+- 🧠 **Join Discussions:** [Start Talking](https://github.com/CO2NEX/co2nex-wallet-smart-contracts/discussions)
+- 🚀 **Roadmap & Ideas:** [Share Ideas](https://github.com/CO2NEX/co2nex-wallet-smart-contracts/discussions/categories/ideas)
+- 🔔 **Announcements:** [View Updates](https://github.com/CO2NEX/co2nex-wallet-smart-contracts/discussions/categories/announcements)
+
+---
+
+---
+
 ## 🔍 SEO Keywords
 `CO2NEX`, `Carbon Credits Blockchain`, `Polygon Smart Contracts`, `ERC-1155 Escrow`, `Tokenized Environmental Assets`, `Sustainable Blockchain`, `Ethereum Bridge`, `Carbon Credit Token`, `HIBC Token`, `Web3 Climate Solutions`
 
