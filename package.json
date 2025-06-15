@@ -1,17 +1,16 @@
 {
   "name": "co2nex-wallet-smart-contracts",
-  "version": "1.0.0",
-  "description": "Smart contracts for the CO2NEX Wallet ecosystem.",
-  "main": "index.js",
+  "version": "1.0.0-alpha",
+  "description": "ERC-1155 Smart Contracts for CO2NEX Wallet — multi-asset token (Carbon, Water, Biodiversity) + escrow system on Polygon.",
   "scripts": {
     "test": "npx hardhat test",
     "compile": "npx hardhat compile",
-    "deploy": "npx hardhat run scripts/deploy.js"
+    "deploy": "npx hardhat run scripts/deploy.js --network localhost"
   },
   "author": "CO2NEX Team",
   "license": "MIT",
   "devDependencies": {
-    "hardhat": "^2.22.0",
-    "@nomicfoundation/hardhat-toolbox": "^3.0.0"
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "dotenv": "^16.0.0"
   }
 }
