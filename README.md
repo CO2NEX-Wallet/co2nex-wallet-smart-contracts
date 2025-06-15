@@ -50,7 +50,7 @@ If you love what we're building — open-source blockchain solutions for environ
 
 ### ❤️ GitHub Sponsor  
 Become a sponsor and help fund CO2NEX development:  
-👉 [**GitHub Sponsors**](https://github.com/sponsors/YourGitHubUsername)
+👉 [**GitHub Sponsors**](https://github.com/sponsors/CO2NEX-Wallet-Smart-Contracts)
 
 ---
 
