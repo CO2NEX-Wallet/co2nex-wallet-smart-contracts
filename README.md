@@ -41,8 +41,10 @@ Engage with developers, contributors, and the climate tech blockchain community 
 If you love what we're building — open-source blockchain solutions for environmental impact — you can support the project:
 
 ### 🪙 **Crypto Donations**
-- **ETH / Polygon (MATIC):** `0xYourWalletAddressHere`
-- **USDC / USDT:** `0xYourWalletAddressHere`
+- **ETH / Polygon (MATIC):** `0x9d1Df1C2CABB2338301b6eA25b10760f3F437fF5`
+- **USDC / USDT ERC20:** `0x9d1Df1C2CABB2338301b6eA25b10760f3F437fF5`
+- **Polygon (MATIC):** `0xYourWalletAddressHere`
+- **USDC / USDT:** `0x9d1Df1C2CABB2338301b6eA25b10760f3F437fF5`
 - **Bitcoin (BTC):** `bc1qYourBTCAddressHere`
 - 🌍 **Or any other tokens — just ask!**
 
