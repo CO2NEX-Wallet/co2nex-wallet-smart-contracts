@@ -9,7 +9,7 @@ const API_SECRET = process.env.APILLON_API_SECRET;
 const AUTH_HEADER = `Basic ${Buffer.from(`${API_KEY}:${API_SECRET}`).toString('base64')}`;
 
 // 📂 Folder to upload
-const folderPath = '../co2nex-project-data/CO2NEX_HIBC_Project_0002/Metadata_IPFS/';
+const folderPath = './Metadata_IPFS/';
 
 // 📁 Where to save CID records
 const recordsPath = '../co2nex-project-data/CO2NEX_HIBC_Project_0002/SmartContract_Records/';
