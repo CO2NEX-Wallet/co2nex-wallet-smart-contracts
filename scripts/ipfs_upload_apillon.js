@@ -16,7 +16,7 @@ const recordsPath = '../co2nex-project-data/CO2NEX_HIBC_Project_0002/SmartContra
 if (!fs.existsSync(recordsPath)) fs.mkdirSync(recordsPath, { recursive: true });
 
 // 🌐 Apillon API Endpoint
-const UPLOAD_URL = 'https://api.apillon.io/storage/file';
+const UPLOAD_URL = 'https://api.apillon.com/storage/file';
 
 async function uploadFile(filePath, fileName) {
   const fileData = fs.readFileSync(filePath);
