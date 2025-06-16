@@ -1,22 +1,28 @@
-const hre = require("hardhat");
+require('dotenv').config();
+const hre = require('hardhat');
 
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
 
-  console.log("Deploying contracts with:", deployer.address);
+  console.log('🚀 Deploying CO2NEX1155 contract with account:', deployer.address);
+  console.log('💰 Account balance:', (await deployer.getBalance()).toString());
 
-  const Token = await hre.ethers.getContractFactory("CO2NEX1155");
+  const Token = await hre.ethers.getContractFactory('CO2NEX1155');
   const token = await Token.deploy();
-  await token.deployed();
-  console.log("Token deployed at:", token.address);
 
-  const Escrow = await hre.ethers.getContractFactory("Escrow1155");
-  const escrow = await Escrow.deploy(token.address);
-  await escrow.deployed();
-  console.log("Escrow deployed at:", escrow.address);
+  await token.deployed();
+
+  console.log('✅ CO2NEX1155 deployed to:', token.address);
+
+  // Optional: Save contract address to a file
+  const fs = require('fs');
+  fs.writeFileSync(
+    './deployment_token_address.txt',
+    `CO2NEX1155 Contract Address: ${token.address}\n`
+  );
 }
 
 main().catch((error) => {
-  console.error(error);
+  console.error('❌ Deployment failed:', error);
   process.exitCode = 1;
 });
