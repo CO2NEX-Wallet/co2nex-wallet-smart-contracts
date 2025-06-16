@@ -12,7 +12,7 @@ const AUTH_HEADER = `Basic ${Buffer.from(`${API_KEY}:${API_SECRET}`).toString('b
 const folderPath = './Metadata_IPFS/';
 
 // 📁 Where to save CID records
-const recordsPath = '../co2nex-project-data/CO2NEX_HIBC_Project_0002/SmartContract_Records/';
+const recordsPath = './SmartContract_Records/';
 if (!fs.existsSync(recordsPath)) fs.mkdirSync(recordsPath, { recursive: true });
 
 // 🌐 Apillon API Endpoint
