@@ -1,1 +1,53 @@
-test 
+{
+  "name": "CO2NEX HIBC Project #0002",
+  "description": "High Integrity Biome Carbon (HIBC) project registered by CO2NEX. This token represents verified Habitat Integrity Biodiversity Credits (HIBCs) generated through avoided deforestation in the Cerrado biome using GEE MRV data.",
+  "external_url": "https://co2nex.com/project/0002",
+  "image": "ipfs://<CID-of-farm_image.png>",
+  "attributes": [
+    {
+      "trait_type": "Biome",
+      "value": "Cerrado Tropical Savanna"
+    },
+    {
+      "trait_type": "Methodology",
+      "value": "REDD Verra 007"
+    },
+    {
+      "trait_type": "Project Area (ha)",
+      "value": 400
+    },
+    {
+      "trait_type": "CO2 Stored (tCO2e)",
+      "value": 56000
+    },
+    {
+      "trait_type": "NDVI Average",
+      "value": 0.71
+    },
+    {
+      "trait_type": "Verification Method",
+      "value": "Satellite (GEE)"
+    },
+    {
+      "trait_type": "Landowner",
+      "value": "Fazenda Chapada"
+    },
+    {
+      "trait_type": "Country",
+      "value": "Brazil"
+    },
+    {
+      "trait_type": "Date Registered",
+      "value": "2024-06-15"
+    },
+    {
+      "trait_type": "GEE App",
+      "value": "https://co2nex-carbon-credit.projects.earthengine.app/view/co2nex-cerrado-guardian--voluntary-carbon-credit-project"
+    }
+  ],
+  "geodata": {
+    "polygon_file": "ipfs://<CID-of-farm_polygon.geojson>",
+    "NDVI_file": "ipfs://<CID-of-NDVI_export.csv>",
+    "biomass_file": "ipfs://<CID-of-biomass_estimates.csv>"
+  }
+}
