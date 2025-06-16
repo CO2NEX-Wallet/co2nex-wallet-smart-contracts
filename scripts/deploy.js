@@ -2,66 +2,52 @@ require('dotenv').config();
 const hre = require("hardhat");
 const fs = require('fs');
 const path = require('path');
-const axios = require('axios');
-
-// Load Apillon API credentials
-const APILLON_AUTH = process.env.APILLON_AUTH;
-const METADATA_FOLDER = '../co2nex-project-data/CO2NEX_HIBC_Project_0002/Metadata_IPFS/';
-
-async function uploadFolderToApillon() {
-  const files = fs.readdirSync(METADATA_FOLDER);
-  const uploaded = [];
-
-  for (const file of files) {
-    const filePath = path.join(METADATA_FOLDER, file);
-    const data = fs.readFileSync(filePath);
-
-    const res = await axios.post(
-      'https://api.apillon.io/storage/upload-file',
-      data,
-      {
-        headers: {
-          'Authorization': `Basic ${APILLON_AUTH}`,
-          'Content-Type': 'application/octet-stream',
-          'X-Apillon-Filename': file
-        }
-      }
-    );
-
-    console.log(`✅ Uploaded ${file} → CID: ${res.data.data.cid}`);
-    uploaded.push(res.data.data.cid);
-  }
-
-  return uploaded[0]; // Assuming metadata.json is first
-}
 
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
-  console.log("🚀 Deploying with account:", deployer.address);
 
-  // Upload metadata to IPFS
-  const ipfsCID = await uploadFolderToApillon();
-  fs.writeFileSync('../co2nex-project-data/CO2NEX_HIBC_Project_0002/SmartContract_Records/ipfs_cid.txt', ipfsCID);
+  // ✅ Project folder from command line
+  if (process.argv.length < 3) {
+    console.error('❌ Please provide the project folder name.');
+    console.error('Example: node scripts/deploy.js CO2NEX_HIBC_Project_0002');
+    process.exit(1);
+  }
+  const projectFolder = process.argv[2];
 
-  // Deploy token contract
+  const recordsPath = `../co2nex-project-data/${projectFolder}/SmartContract_Records/`;
+  if (!fs.existsSync(recordsPath)) fs.mkdirSync(recordsPath, { recursive: true });
+
+  // ✅ Read CID from ipfs_cid.json
+  const cidFile = path.join(recordsPath, 'ipfs_cid.json');
+  if (!fs.existsSync(cidFile)) {
+    console.error('❌ ipfs_cid.json not found.');
+    process.exit(1);
+  }
+
+  const cidData = JSON.parse(fs.readFileSync(cidFile, 'utf8'));
+  const metadataCid = cidData.find(f => f.file === 'metadata.json')?.cid;
+  if (!metadataCid) {
+    console.error('❌ metadata.json CID not found in ipfs_cid.json');
+    process.exit(1);
+  }
+
+  const metadataURI = `ipfs://${metadataCid}`;
+
+  console.log("🚀 Deploying contract...");
   const Token = await hre.ethers.getContractFactory("CO2NEX1155");
-  const token = await Token.deploy(`ipfs://${ipfsCID}/{id}.json`);
+  const token = await Token.deploy(metadataURI);
   await token.deployed();
-  console.log("✅ Token deployed to:", token.address);
 
-  // Save Token info
-  fs.writeFileSync('../co2nex-project-data/CO2NEX_HIBC_Project_0002/SmartContract_Records/token_address.txt', token.address);
+  console.log(`✅ Contract deployed at: ${token.address}`);
 
-  // Deploy Escrow contract
-  const Escrow = await hre.ethers.getContractFactory("Escrow1155");
-  const escrow = await Escrow.deploy(token.address);
-  await escrow.deployed();
-  console.log("✅ Escrow deployed to:", escrow.address);
+  // ✅ Save contract address
+  fs.writeFileSync(path.join(recordsPath, 'contract_address.txt'), token.address);
 
-  // Save Escrow info
-  fs.writeFileSync('../co2nex-project-data/CO2NEX_HIBC_Project_0002/SmartContract_Records/escrow_address.txt', escrow.address);
+  // ✅ Initial Token ID (hardcoded or configurable)
+  const tokenId = Date.now(); // Example token ID based on timestamp
+  fs.writeFileSync(path.join(recordsPath, 'token_id.txt'), tokenId.toString());
 
-  console.log("🎉 Deployment complete!");
+  console.log(`🆔 Token ID: ${tokenId}`);
 }
 
 main().catch((error) => {
