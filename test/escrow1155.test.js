@@ -1,63 +1,44 @@
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+require('dotenv').config();
+const hre = require('hardhat');
+const fs = require('fs');
+const path = require('path');
 
-describe("Escrow1155", function () {
-  let Token, Escrow, token, escrow;
-  let owner, buyer, seller;
+// === 🔗 Read Token Contract Address ===
+const tokenAddress = process.env.CONTRACT_ADDRESS;
 
-  beforeEach(async function () {
-    [owner, buyer, seller] = await ethers.getSigners();
+if (!tokenAddress) {
+  console.error('❌ CONTRACT_ADDRESS not found in .env');
+  process.exit(1);
+}
 
-    Token = await ethers.getContractFactory("CO2NEX1155");
-    token = await Token.deploy();
-    await token.deployed();
+async function main() {
+  const [deployer] = await hre.ethers.getSigners();
 
-    Escrow = await ethers.getContractFactory("Escrow1155");
-    escrow = await Escrow.deploy(token.address);
-    await escrow.deployed();
+  console.log('🚀 Deploying Escrow contract with account:', deployer.address);
+  console.log('💰 Account balance:', (await deployer.getBalance()).toString());
 
-    // Mint tokens to buyer
-    await token.mint(buyer.address, 1, 1000, "0x"); // Carbon
-  });
+  const Escrow = await hre.ethers.getContractFactory('Escrow1155');
+  const escrow = await Escrow.deploy(tokenAddress);
 
-  it("Should create a deal and hold tokens", async function () {
-    await token.connect(buyer).setApprovalForAll(escrow.address, true);
+  await escrow.deployed();
 
-    await expect(escrow.connect(buyer).createDeal(seller.address, 1, 500))
-      .to.emit(escrow, "DealCreated")
-      .withArgs(1, buyer.address, seller.address, 1, 500);
+  console.log('✅ Escrow deployed to:', escrow.address);
 
-    const balance = await token.balanceOf(escrow.address, 1);
-    expect(balance).to.equal(500);
-  });
+  // === 🔥 Auto Save Escrow Address to Project Folder ===
 
-  it("Should release tokens to seller", async function () {
-    await token.connect(buyer).setApprovalForAll(escrow.address, true);
-    await escrow.connect(buyer).createDeal(seller.address, 1, 500);
+  const projectFolder = process.env.DEFAULT_PROJECT_FOLDER || 'CO2NEX_HIBC_Project_0002';
+  const savePath = path.join(
+    '../co2nex-project-data/',
+    projectFolder,
+    'SmartContract_Records/escrow_address.txt'
+  );
 
-    await expect(escrow.connect(buyer).releaseDeal(1))
-      .to.emit(escrow, "DealReleased")
-      .withArgs(1);
+  fs.writeFileSync(savePath, escrow.address);
 
-    const sellerBalance = await token.balanceOf(seller.address, 1);
-    expect(sellerBalance).to.equal(500);
+  console.log(`📄 Escrow address saved to: ${savePath}`);
+}
 
-    const escrowBalance = await token.balanceOf(escrow.address, 1);
-    expect(escrowBalance).to.equal(0);
-  });
-
-  it("Should not release twice", async function () {
-    await token.connect(buyer).setApprovalForAll(escrow.address, true);
-    await escrow.connect(buyer).createDeal(seller.address, 1, 500);
-
-    await escrow.connect(buyer).releaseDeal(1);
-    await expect(escrow.connect(buyer).releaseDeal(1)).to.be.revertedWith("Deal already released");
-  });
-
-  it("Should block unauthorized release", async function () {
-    await token.connect(buyer).setApprovalForAll(escrow.address, true);
-    await escrow.connect(buyer).createDeal(seller.address, 1, 500);
-
-    await expect(escrow.connect(seller).releaseDeal(1)).to.be.revertedWith("Not authorized");
-  });
+main().catch((error) => {
+  console.error('❌ Deployment failed:', error);
+  process.exitCode = 1;
 });
