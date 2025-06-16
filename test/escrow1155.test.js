@@ -1,44 +1,112 @@
-require('dotenv').config();
-const hre = require('hardhat');
-const fs = require('fs');
-const path = require('path');
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
-// === 🔗 Read Token Contract Address ===
-const tokenAddress = process.env.CONTRACT_ADDRESS;
+describe("Escrow1155 Contract", function () {
+  let Token, Escrow;
+  let token, escrow;
+  let owner, addr1, addr2;
+  const tokenId = 1;
+  const depositAmount = 100;
 
-if (!tokenAddress) {
-  console.error('❌ CONTRACT_ADDRESS not found in .env');
-  process.exit(1);
-}
+  beforeEach(async function () {
+    // Get the contract factories
+    [owner, addr1, addr2] = await ethers.getSigners();
 
-async function main() {
-  const [deployer] = await hre.ethers.getSigners();
+    Token = await ethers.getContractFactory("CO2NEX1155");
+    token = await Token.deploy();
+    await token.deployed();
 
-  console.log('🚀 Deploying Escrow contract with account:', deployer.address);
-  console.log('💰 Account balance:', (await deployer.getBalance()).toString());
+    // Mint tokens to addr1
+    await token.connect(owner).mint(addr1.address, tokenId, 1000, "0x");
 
-  const Escrow = await hre.ethers.getContractFactory('Escrow1155');
-  const escrow = await Escrow.deploy(tokenAddress);
+    // Deploy the escrow contract
+    Escrow = await ethers.getContractFactory("Escrow1155");
+    escrow = await Escrow.deploy(token.address);
+    await escrow.deployed();
+  });
 
-  await escrow.deployed();
+  describe("Deployment", function () {
+    it("Should set the correct token address", async function () {
+      expect(await escrow.tokenAddress()).to.equal(token.address);
+    });
+  });
 
-  console.log('✅ Escrow deployed to:', escrow.address);
+  describe("Deposit", function () {
+    it("Should allow users to deposit tokens into escrow", async function () {
+      // Approve escrow to transfer tokens
+      await token.connect(addr1).setApprovalForAll(escrow.address, true);
 
-  // === 🔥 Auto Save Escrow Address to Project Folder ===
+      // Deposit tokens
+      await expect(
+        escrow.connect(addr1).deposit(tokenId, depositAmount)
+      ).to.emit(escrow, "Deposited")
+        .withArgs(addr1.address, tokenId, depositAmount);
 
-  const projectFolder = process.env.DEFAULT_PROJECT_FOLDER || 'CO2NEX_HIBC_Project_0002';
-  const savePath = path.join(
-    '../co2nex-project-data/',
-    projectFolder,
-    'SmartContract_Records/escrow_address.txt'
-  );
+      const balance = await escrow.balanceOf(addr1.address, tokenId);
+      expect(balance).to.equal(depositAmount);
 
-  fs.writeFileSync(savePath, escrow.address);
+      const walletBalance = await token.balanceOf(addr1.address, tokenId);
+      expect(walletBalance).to.equal(1000 - depositAmount);
+    });
 
-  console.log(`📄 Escrow address saved to: ${savePath}`);
-}
+    it("Should fail if approval is not given", async function () {
+      await expect(
+        escrow.connect(addr1).deposit(tokenId, depositAmount)
+      ).to.be.revertedWith("ERC1155: caller is not approved");
+    });
+  });
 
-main().catch((error) => {
-  console.error('❌ Deployment failed:', error);
-  process.exitCode = 1;
+  describe("Withdraw", function () {
+    beforeEach(async function () {
+      await token.connect(addr1).setApprovalForAll(escrow.address, true);
+      await escrow.connect(addr1).deposit(tokenId, depositAmount);
+    });
+
+    it("Should allow users to withdraw tokens from escrow", async function () {
+      await expect(
+        escrow.connect(addr1).withdraw(tokenId, depositAmount)
+      ).to.emit(escrow, "Withdrawn")
+        .withArgs(addr1.address, tokenId, depositAmount);
+
+      const balance = await escrow.balanceOf(addr1.address, tokenId);
+      expect(balance).to.equal(0);
+
+      const walletBalance = await token.balanceOf(addr1.address, tokenId);
+      expect(walletBalance).to.equal(1000);
+    });
+
+    it("Should fail if trying to withdraw more than deposited", async function () {
+      await expect(
+        escrow.connect(addr1).withdraw(tokenId, depositAmount + 1)
+      ).to.be.revertedWith("Not enough balance in escrow");
+    });
+  });
+
+  describe("Ownership & Admin", function () {
+    it("Should restrict ownership-only functions", async function () {
+      await expect(
+        escrow.connect(addr1).setTokenAddress(addr2.address)
+      ).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("Owner can change token address", async function () {
+      await escrow.connect(owner).setTokenAddress(addr2.address);
+      expect(await escrow.tokenAddress()).to.equal(addr2.address);
+    });
+  });
+
+  describe("Edge Cases", function () {
+    it("Should not allow depositing zero tokens", async function () {
+      await token.connect(addr1).setApprovalForAll(escrow.address, true);
+      await expect(
+        escrow.connect(addr1).deposit(tokenId, 0)
+      ).to.be.revertedWith("Amount must be greater than zero");
+    });
+
+    it("Should not allow withdrawing zero tokens", async function () {
+      await expect(
+        escrow.connect(addr1).withdraw(tokenId, 0)
+      ).to.be.revertedWith("Amount must be greater than zero");
+    });
+  });
 });
