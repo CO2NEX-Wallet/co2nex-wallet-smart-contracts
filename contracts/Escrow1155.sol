@@ -1,60 +1,87 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.20;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol";
 
-contract Escrow1155 is ERC165 {
-    address public owner;
+contract Escrow1155 is Ownable, ReentrancyGuard, ERC1155Receiver {
     IERC1155 public token;
 
-    struct Deal {
-        uint256 tokenId;
-        uint256 amount;
-        address buyer;
-        address seller;
-        bool isReleased;
+    // Mapping: user => tokenID => balance
+    mapping(address => mapping(uint256 => uint256)) private balances;
+
+    // 🔥 Events for front-end & monitoring
+    event Deposited(address indexed user, uint256 indexed tokenId, uint256 amount);
+    event Withdrawn(address indexed user, uint256 indexed tokenId, uint256 amount);
+    event TokenAddressUpdated(address indexed newTokenAddress);
+
+    constructor(address _tokenAddress) {
+        require(_tokenAddress != address(0), "Token address cannot be zero");
+        token = IERC1155(_tokenAddress);
     }
 
-    uint256 public dealCount;
-    mapping(uint256 => Deal) public deals;
+    // ✅ Deposit tokens into escrow
+    function deposit(uint256 tokenId, uint256 amount) external nonReentrant {
+        require(amount > 0, "Amount must be greater than zero");
 
-    event DealCreated(uint256 indexed dealId, address indexed buyer, address indexed seller, uint256 tokenId, uint256 amount);
-    event DealReleased(uint256 indexed dealId);
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Not owner");
-        _;
-    }
-
-    constructor(address tokenAddress) {
-        owner = msg.sender;
-        token = IERC1155(tokenAddress);
-    }
-
-    function createDeal(address seller, uint256 tokenId, uint256 amount) external {
+        // Transfer tokens from user to escrow contract
         token.safeTransferFrom(msg.sender, address(this), tokenId, amount, "");
 
-        dealCount++;
-        deals[dealCount] = Deal({
-            tokenId: tokenId,
-            amount: amount,
-            buyer: msg.sender,
-            seller: seller,
-            isReleased: false
-        });
+        // Update internal balance mapping
+        balances[msg.sender][tokenId] += amount;
 
-        emit DealCreated(dealCount, msg.sender, seller, tokenId, amount);
+        emit Deposited(msg.sender, tokenId, amount);
     }
 
-    function releaseDeal(uint256 dealId) external {
-        Deal storage deal = deals[dealId];
-        require(!deal.isReleased, "Deal already released");
-        require(msg.sender == deal.buyer || msg.sender == owner, "Not authorized");
+    // ✅ Withdraw tokens from escrow
+    function withdraw(uint256 tokenId, uint256 amount) external nonReentrant {
+        require(amount > 0, "Amount must be greater than zero");
+        uint256 userBalance = balances[msg.sender][tokenId];
+        require(userBalance >= amount, "Not enough balance in escrow");
 
-        deal.isReleased = true;
-        token.safeTransferFrom(address(this), deal.seller, deal.tokenId, deal.amount, "");
+        balances[msg.sender][tokenId] -= amount;
 
-        emit DealReleased(dealId);
+        token.safeTransferFrom(address(this), msg.sender, tokenId, amount, "");
+
+        emit Withdrawn(msg.sender, tokenId, amount);
+    }
+
+    // ✅ View balance in escrow for a user and token ID
+    function balanceOf(address user, uint256 tokenId) external view returns (uint256) {
+        return balances[user][tokenId];
+    }
+
+    // ✅ Admin function to change token contract if needed (in emergencies or upgrades)
+    function setTokenAddress(address newToken) external onlyOwner {
+        require(newToken != address(0), "Invalid token address");
+        token = IERC1155(newToken);
+        emit TokenAddressUpdated(newToken);
+    }
+
+    // ✅ Required for ERC1155 safe transfers
+    function onERC1155Received(
+        address,
+        address,
+        uint256,
+        uint256,
+        bytes calldata
+    ) public pure override returns (bytes4) {
+        return this.onERC1155Received.selector;
+    }
+
+    function onERC1155BatchReceived(
+        address,
+        address,
+        uint256[] calldata,
+        uint256[] calldata,
+        bytes calldata
+    ) public pure override returns (bytes4) {
+        return this.onERC1155BatchReceived.selector;
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view override returns (bool) {
+        return super.supportsInterface(interfaceId) || interfaceId == type(IERC1155Receiver).interfaceId;
     }
 }
