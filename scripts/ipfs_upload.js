@@ -1,56 +1,55 @@
 require('dotenv').config();
-const { create } = require('ipfs-http-client');
 const fs = require('fs');
 const path = require('path');
+const axios = require('axios');
+const { saveCID } = require('./cid_writer');
 
-// Auth for Infura IPFS
-const auth = 'Basic ' + Buffer.from(
-  process.env.INFURA_PROJECT_ID + ':' + process.env.INFURA_PROJECT_SECRET
-).toString('base64');
+// 🔑 Auth
+const API_KEY = process.env.APILLON_API_KEY;
+const API_SECRET = process.env.APILLON_API_SECRET;
+const AUTH_HEADER = `Basic ${Buffer.from(`${API_KEY}:${API_SECRET}`).toString('base64')}`;
 
-// IPFS client setup
-const client = create({
-  host: 'ipfs.infura.io',
-  port: 5001,
-  protocol: 'https',
-  headers: { authorization: auth },
-});
+// 📂 Folder path
+const folderPath = '../co2nex-project-data/CO2NEX_HIBC_Project_0002/Metadata_IPFS/';
 
-// ⛔ Folder argument missing handler
-if (process.argv.length < 3) {
-  console.error('❌ Please provide the project folder name.');
-  console.error('Example: node scripts/ipfs_upload.js CO2NEX_HIBC_Project_0002');
-  process.exit(1);
+const UPLOAD_URL = 'https://api.apillon.io/storage/file';
+
+async function uploadFile(filePath, fileName) {
+  const fileData = fs.readFileSync(filePath);
+
+  const response = await axios.post(UPLOAD_URL, fileData, {
+    headers: {
+      'Authorization': AUTH_HEADER,
+      'Content-Type': 'application/octet-stream',
+      'x-apillon-filename': fileName,
+    },
+  });
+
+  console.log(`✅ Uploaded: ${fileName}`);
+  console.log(`🔗 CID: ${response.data.data.cid}`);
+  console.log(`🔗 IPFS URL: https://${response.data.data.cid}.ipfs.cf-ipfs.com/${fileName}`);
+
+  return response.data.data.cid;
 }
 
-const projectFolder = process.argv[2];
-const folderPath = `../co2nex-project-data/${projectFolder}/Metadata_IPFS/`;
+async function uploadFolder() {
+  const files = fs.readdirSync(folderPath);
+  let mainCid = null;
 
-async function uploadToIPFS() {
-  try {
-    const files = fs.readdirSync(folderPath);
-    const results = [];
+  for (const file of files) {
+    const filePath = path.join(folderPath, file);
+    const cid = await uploadFile(filePath, file);
 
-    for (const file of files) {
-      const filePath = path.join(folderPath, file);
-      const fileContent = fs.readFileSync(filePath);
-
-      const result = await client.add({ path: file, content: fileContent });
-
-      console.log(`✅ Uploaded: ${file}`);
-      console.log(`🔗 IPFS CID: https://ipfs.io/ipfs/${result.cid}`);
-      
-      results.push({ file: file, cid: result.cid.toString() });
+    if (file === 'metadata.json') {
+      mainCid = cid;
     }
+  }
 
-    // Save CIDs locally for reference
-    const outputPath = `../co2nex-project-data/${projectFolder}/SmartContract_Records/ipfs_cid.json`;
-    fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
-
-    console.log(`📝 Saved CIDs to ${outputPath}`);
-  } catch (err) {
-    console.error('❌ Upload error:', err);
+  if (mainCid) {
+    saveCID(mainCid);
+  } else {
+    console.warn('⚠️ metadata.json not found. CID not saved.');
   }
 }
 
-uploadToIPFS();
+uploadFolder();
